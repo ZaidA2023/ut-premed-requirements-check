@@ -222,11 +222,12 @@
   .chip.partial{ color:var(--warn); background:var(--warn-bg); }
   .chip.missing{ color:var(--bad); background:var(--bad-bg); }
 
-  .track{ height:8px; border-radius:99px; background:var(--surface-2); overflow:hidden; }
-  .fill{ height:100%; border-radius:99px; background:var(--accent); transition:width .25s; }
+  .track{ height:8px; border-radius:99px; background:var(--surface-2); overflow:hidden; display:flex; }
+  .fill{ height:100%; background:var(--accent); transition:width .25s; flex:none; }
   .fill.met{ background:var(--good); }
+  .fill.planned{ opacity:.5; }
 
-  .hrs-line{ display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:12px; font-variant-numeric:tabular-nums; color:var(--ink-soft); }
+  .hrs-line{ display:flex; justify-content:space-between; gap:4px 10px; flex-wrap:wrap; font-family:var(--font-mono); font-size:12px; font-variant-numeric:tabular-nums; color:var(--ink-soft); }
   .hrs-line b{ color:var(--ink); }
 
   .matched-list{ display:flex; flex-direction:column; gap:4px; }
@@ -236,6 +237,10 @@
   .matched-item .flag.ip{ color:var(--info); background:var(--info-bg); }
   .matched-item.excluded{ color:var(--ink-soft); text-decoration:line-through; }
   .matched-item.excluded .flag{ color:var(--bad); background:var(--bad-bg); }
+  .matched-item.planned{ cursor:pointer; align-items:center; }
+  .matched-item.planned input{ margin:0; accent-color:var(--accent); width:14px; height:14px; cursor:pointer; }
+  .matched-item .flag.plan{ color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); }
+  .chip.planned{ color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); }
   .empty-need{ font-size:12.5px; color:var(--ink-soft); font-style:italic; }
   .req-note{ font-size:11.5px; color:var(--ink-soft); line-height:1.45; border-top:1px solid var(--line); padding-top:8px; }
 
@@ -305,6 +310,7 @@
             <option>Credit by exam</option>
             <option>Transfer credit</option>
             <option>In progress</option>
+            <option>Planned</option>
           </select>
         </label>
         <label>Hours
@@ -456,12 +462,33 @@
     "psych":    { text:"PSY 301, or any other PSY course.", offer:["PSY301"] },
     "soc":      { text:"SOC 302, or any other SOC course.", offer:["SOC302"] }
   };
+  // alternative routes per requirement: once a course from one route is taken or planned, only that route is offered
+  var SEQS = {
+    "bio-lec":["BIO311C BIO311D BIO325","BIO315H BIO325H"], "bio-lab":["BIO206L"],
+    "chem-lec":["CH301 CH302","CH301H CH302H"], "chem-lab":["CH204","CH104M CH104N"],
+    "orgo-lec":["CH320M CH320N","CH328M CH328N"], "orgo-lab":["CH220C","CH128K CH128L"],
+    "bchem":["BCH369","BCH339F"],
+    "phys-lec":["PHY317K PHY317L","PHY302K PHY302L","PHY303K PHY303L","PHY301 PHY316"],
+    "phys-lab":["PHY105M PHY105N","PHY101L PHY116L"],
+    "math":["SDS301","SDS302F","SDS320E","EDP371"],
+    "english":["RHE306 RHE309J E316L E316M E316N"], "psych":["PSY301"], "soc":["SOC302"]
+  };
+  function offeredCodes(reqId, involved){
+    var seqs = (SEQS[reqId] || []).map(function(x){ return x.split(" "); });
+    var active = seqs.filter(function(q){ return q.some(function(c){ return involved[c]; }); });
+    if(!active.length) active = seqs;
+    var out = [];
+    active.forEach(function(q){ q.forEach(function(c){ if(!involved[c] && out.indexOf(c) < 0) out.push(c); }); });
+    return out;
+  }
   function prettyCode(c){ return c.replace(/^([A-Z]+?)(\d)/, "$1 $2").replace(/^CS /, "C S "); }
 
   var BAD_GRADES = {"C-":1,"D+":1,"D":1,"D-":1,"F":1,"NC":1,"W":1,"I":1,"Q":1,"X":1};
 
   function normCode(c){ return (c||"").replace(/\s+/g,"").toUpperCase(); }
+  function isPlanned(course){ return /planned/i.test(course.type||"") && !(course.grade||"").trim(); }
   function isInProgress(course){
+    if(isPlanned(course)) return false;
     var g = (course.grade||"").trim().toUpperCase();
     return !g || g === "IP" || /progress|enrolled|current/i.test(course.type||"");
   }
@@ -762,32 +789,38 @@
 
       tbody.appendChild(tr);
     });
-    var n = state.courses.length, ip = state.courses.filter(isInProgress).length;
-    document.getElementById("row-count").textContent = n + " course" + (n===1?"":"s") + " on record" + (ip ? " · " + ip + " in progress" : "");
+    var n = state.courses.length, ip = state.courses.filter(isInProgress).length, pl = state.courses.filter(isPlanned).length;
+    document.getElementById("row-count").textContent = n + " course" + (n===1?"":"s") + " on record" + (ip ? " · " + ip + " in progress" : "") + (pl ? " · " + pl + " planned" : "");
   }
 
   /* ================= requirement computation ================= */
   function computeRequirements(){
     return REQUIREMENTS.map(function(req){
       var matched = [];
-      var sumHours = 0;
+      var sumHours = 0, plannedHours = 0;
       var altFlag = null;
-      state.courses.forEach(function(course){
+      state.courses.forEach(function(course, idx){
         var code = normCode(course.code);
         if(!code) return;
         var isMatch = (req.exact && req.exact.indexOf(code) >= 0) ||
                       (req.prefix && req.prefix.test(code) && !(req.prefixExclude && req.prefixExclude.indexOf(code) >= 0));
         if(isMatch){
-          var counted = gradeCounts(course);
           var hrs = parseFloat(course.hours) || 0;
+          if(isPlanned(course)){
+            plannedHours += hrs;
+            matched.push({ course: course, idx: idx, planned: true, counted: false, hrs: hrs });
+            return;
+          }
+          var counted = gradeCounts(course);
           if(counted) sumHours += hrs;
-          matched.push({ course: course, counted: counted, exam: isExamCredit(course), ip: isInProgress(course), hrs: hrs });
+          matched.push({ course: course, idx: idx, counted: counted, exam: isExamCredit(course), ip: isInProgress(course), hrs: hrs });
         } else if(req.altPattern && req.altPattern.test(code)){
           altFlag = course;
         }
       });
-      var status = sumHours >= req.hours ? "met" : (sumHours > 0 ? "partial" : "missing");
-      return { req: req, matched: matched, sumHours: sumHours, status: status, altFlag: altFlag };
+      var status = sumHours >= req.hours ? "met" :
+                   (sumHours + plannedHours >= req.hours ? "planned" : (sumHours > 0 ? "partial" : "missing"));
+      return { req: req, matched: matched, sumHours: sumHours, plannedHours: plannedHours, status: status, altFlag: altFlag };
     });
   }
 
@@ -808,20 +841,28 @@
       card.className = "req-card";
 
       var pct = Math.min(100, (r.sumHours / req.hours) * 100);
-      var statusLabel = r.status === "met" ? "Met" : (r.status === "partial" ? "In progress" : "Not started");
+      var planPct = r.status === "met" ? 0 : Math.min(100 - pct, (r.plannedHours / req.hours) * 100);
+      var statusLabel = {met:"Met", planned:"Planned", partial:"In progress", missing:"Not started"}[r.status];
+      var left = Math.max(0, req.hours - r.sumHours - r.plannedHours);
 
       var html = '';
       html += '<div class="req-top"><div class="req-name"><div class="group">'+req.group+'</div><div class="part">'+req.part+'</div></div>';
       html += '<span class="chip '+r.status+'">'+statusLabel+'</span></div>';
-      html += '<div class="track"><div class="fill '+(r.status==="met"?"met":"")+'" style="width:'+pct+'%"></div></div>';
-      html += '<div class="hrs-line"><span><b>'+r.sumHours.toFixed(1)+'</b> / '+req.hours.toFixed(1)+' hrs</span>';
-      html += '<span>'+(req.hours - r.sumHours > 0 ? (req.hours - r.sumHours).toFixed(1) + ' hrs left' : 'complete')+'</span></div>';
+      html += '<div class="track"><div class="fill '+(r.status==="met"?"met":"")+'" style="width:'+pct+'%"></div>';
+      if(planPct > 0) html += '<div class="fill planned" style="width:'+planPct+'%"></div>';
+      html += '</div>';
+      html += '<div class="hrs-line"><span><b>'+r.sumHours.toFixed(1)+'</b> / '+req.hours.toFixed(1)+' hrs'+(r.plannedHours > 0 && r.status !== "met" ? ' &middot; '+r.plannedHours.toFixed(1)+' planned' : '')+'</span>';
+      html += '<span>'+(r.status === "met" ? 'complete' : (left > 0 ? left.toFixed(1) + ' hrs left' : 'fully planned'))+'</span></div>';
 
       html += '<div class="matched-list">';
       if(r.matched.length === 0){
         html += '<div class="empty-need">No matching coursework yet.</div>';
       } else {
         r.matched.forEach(function(m){
+          if(m.planned){
+            html += '<label class="matched-item planned" title="Uncheck to remove this planned course"><input type="checkbox" checked data-unplan="'+m.idx+'"><span class="mcode">'+esc(m.course.code)+'</span><span>'+m.hrs.toFixed(1)+' hrs</span><span class="flag plan">planned</span></label>';
+            return;
+          }
           var cls = m.counted ? "matched-item" : "matched-item excluded";
           html += '<div class="'+cls+'"><span class="mcode">'+esc(m.course.code)+'</span><span>'+m.hrs.toFixed(1)+' hrs</span>';
           if(!m.counted){ html += '<span class="flag">below C minimum</span>'; }
@@ -833,15 +874,14 @@
       html += '</div>';
 
       var path = PATHS[req.id];
-      if(r.status !== "met" && path){
-        var have = {};
-        r.matched.forEach(function(m){ if(m.counted) have[normCode(m.course.code)] = 1; });
-        html += '<div class="options"><div class="opt-label">Ways to finish &middot; '+(req.hours - r.sumHours).toFixed(1)+' hrs to go</div>';
+      if(left > 0 && path){
+        var involved = {};
+        r.matched.forEach(function(m){ if(m.counted || m.planned) involved[normCode(m.course.code)] = 1; });
+        html += '<div class="options"><div class="opt-label">Ways to finish &middot; '+left.toFixed(1)+' hrs to go</div>';
         html += '<div class="opt-path">'+path.text+'</div><div class="opt-chips">';
-        path.offer.forEach(function(code){
-          if(have[code]) return;
+        offeredCodes(req.id, involved).forEach(function(code){
           var info = CATALOG[code] || [code, 3];
-          html += '<button type="button" class="opt-chip" data-add="'+code+'" title="Add '+esc(prettyCode(code))+' to your courses">+ <b>'+esc(prettyCode(code))+'</b> '+esc(info[0])+' &middot; '+info[1]+' hr'+(info[1]===1?'':'s')+'</button>';
+          html += '<button type="button" class="opt-chip" data-add="'+code+'" title="Plan '+esc(prettyCode(code))+'">+ <b>'+esc(prettyCode(code))+'</b> '+esc(info[0])+' &middot; '+info[1]+' hr'+(info[1]===1?'':'s')+'</button>';
         });
         html += '</div></div>';
       }
@@ -930,6 +970,16 @@
       closeAddPanel();
       showToast("Added " + code + ".");
     });
+  }
+
+  function planCourse(code){
+    var already = state.courses.some(function(c){ return normCode(c.code) === code; });
+    if(already){ showToast(prettyCode(code) + " is already on your list."); return; }
+    var info = CATALOG[code] || [code, 3];
+    state.courses.push({ term:"Planned", code:prettyCode(code), title:info[0], grade:"", type:"Planned", hours:info[1].toFixed(1) });
+    saveState();
+    renderAll();
+    showToast("Planned " + prettyCode(code) + ".");
   }
 
   function fillFromCode(code){
@@ -1039,7 +1089,15 @@
     document.getElementById("add-row").addEventListener("click", function(){ openAddPanel(""); });
     document.getElementById("req-grid").addEventListener("click", function(e){
       var chip = e.target.closest("[data-add]");
-      if(chip) openAddPanel(chip.getAttribute("data-add"));
+      if(chip) planCourse(chip.getAttribute("data-add"));
+    });
+    document.getElementById("req-grid").addEventListener("change", function(e){
+      var box = e.target.closest("[data-unplan]");
+      if(!box || box.checked) return;
+      var removed = state.courses.splice(parseInt(box.getAttribute("data-unplan"), 10), 1)[0];
+      saveState();
+      renderAll();
+      if(removed) showToast("Removed planned " + removed.code + ".");
     });
 
     if(typeof window.pdfjsLib === "undefined"){
