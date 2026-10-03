@@ -796,6 +796,9 @@
 
   function renderDashboard(){
     var results = computeRequirements();
+    // unfinished requirements first, completed ones sink to the bottom; original order kept within each group
+    results = results.filter(function(r){ return r.status !== "met"; })
+                     .concat(results.filter(function(r){ return r.status === "met"; }));
 
     var grid = document.getElementById("req-grid");
     grid.innerHTML = "";
