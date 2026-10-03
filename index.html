@@ -235,6 +235,7 @@
   .matched-item .mcode{ font-family:var(--font-mono); font-weight:600; }
   .matched-item .flag{ font-size:10.5px; color:var(--warn); background:var(--warn-bg); padding:1px 6px; border-radius:3px; }
   .matched-item .flag.ip{ color:var(--info); background:var(--info-bg); }
+  .matched-item .flag.tm{ color:var(--ink-soft); background:var(--surface-2); }
   .matched-item.excluded{ color:var(--ink-soft); text-decoration:line-through; }
   .matched-item.excluded .flag{ color:var(--bad); background:var(--bad-bg); }
   .matched-item.planned{ cursor:pointer; align-items:center; }
@@ -410,7 +411,7 @@
 
   <footer>
     All medical-school prerequisites generally require a grade of <b style="color:var(--ink);">C or better</b> (some schools set a higher bar). Credit-by-exam (AP/IB/CLEP) courses count here and are flagged &mdash; many Texas schools accept them, but policies vary, especially out of state. This is an independent study tool built from the publicly posted guidance at
-    <a href="https://healthprofessions.utexas.edu/health-professions/pre-medical-pathway/pre-med-course-requirements" target="_blank" rel="noopener">healthprofessions.utexas.edu</a>, not an official university tool or admissions guarantee &mdash; confirm everything with your academic advisor and each target school.
+    <a href="https://healthprofessions.utexas.edu/health-professions/pre-medical-pathway/pre-med-course-requirements" target="_blank" rel="noopener">healthprofessions.utexas.edu</a>, with the <a href="https://tmdsas.com/course-listings/Schools/UT_Austin.html" target="_blank" rel="noopener">TMDSAS UT Austin course list</a> as a backup for courses HPO doesn't name, not an official university tool or admissions guarantee &mdash; confirm everything with your academic advisor and each target school.
   </footer>
 </div>
 
@@ -423,12 +424,10 @@
   var REQUIREMENTS = [
     { id:"bio-lec",  group:"Biological Sciences", part:"Lecture", hours:12,
       exact:["BIO311C","BIO311D","BIO325","BIO315H","BIO325H"],
-      prefix:/^(BIO|INB|MBS)3[2-9]\d[A-Z]?$/, prefixExclude:["BIO325"],
-      note:"BIO 311C + BIO 311D + BIO 325 + 3 UD hrs (or BIO 315H + BIO 325H + 6 UD hrs). BIO 325 isn't always explicitly required, but it's the prerequisite for most upper-division bio electives." },
+      note:"BIO 311C + BIO 311D + BIO 325 + 3 UD hrs (or BIO 315H + BIO 325H + 6 UD hrs). Upper-division electives count if they're on TMDSAS's UT Austin biology list. BIO 325 isn't always explicitly required, but it's the prerequisite for most upper-division bio electives." },
     { id:"bio-lab",  group:"Biological Sciences", part:"Lab", hours:2,
       exact:["BIO206L","BIO206LA","BIO206LB"],
-      prefix:/^(BIO|INB|MBS)3[2-9]\d[A-Z]?L$/,
-      note:"BIO 206L, or 2 hrs of upper-division BIO/INB/MBS lab. Must be formal lab coursework &mdash; research credit (e.g. BIO 377) doesn't count." },
+      note:"BIO 206L, or 2 hrs of lab from TMDSAS's UT Austin biology lab list. Must be formal lab coursework &mdash; research credit (e.g. BIO 377) doesn't count." },
     { id:"chem-lec", group:"General Chemistry", part:"Lecture", hours:6,
       exact:["CH301","CH302","CH301H","CH302H","CH301C","CH302C"] },
     { id:"chem-lab", group:"General Chemistry", part:"Lab", hours:2,
@@ -487,8 +486,8 @@
   };
   // the realistic routes to finish each requirement, plus which catalog courses to offer as chips
   var PATHS = {
-    "bio-lec":  { text:"BIO 311C + BIO 311D + BIO 325, plus 3 hrs of any upper-division BIO / INB / MBS lecture.", offer:["BIO311C","BIO311D","BIO325","BIO315H","BIO325H"] },
-    "bio-lab":  { text:"BIO 206L, or 2 hrs of upper-division BIO / INB / MBS lab (course numbers ending in L).", offer:["BIO206L"] },
+    "bio-lec":  { text:"BIO 311C + BIO 311D + BIO 325, plus 3 hrs of upper-division biology from the TMDSAS UT Austin list.", offer:["BIO311C","BIO311D","BIO325","BIO315H","BIO325H"] },
+    "bio-lab":  { text:"BIO 206L, or 2 hrs of biology lab from the TMDSAS UT Austin list.", offer:["BIO206L"] },
     "chem-lec": { text:"CH 301 + CH 302 (or the honors versions). AP Chemistry credit counts.", offer:["CH301","CH302","CH301H","CH302H"] },
     "chem-lab": { text:"CH 204, or CH 104M + CH 104N.", offer:["CH204","CH104M","CH104N"] },
     "orgo-lec": { text:"Pick one sequence: CH 320M + CH 320N, or CH 328M + CH 328N.", offer:["CH320M","CH320N","CH328M","CH328N"] },
@@ -521,6 +520,93 @@
     return out;
   }
   function prettyCode(c){ return c.replace(/^([A-Z]+?)(\d)/, "$1 $2").replace(/^CS /, "C S "); }
+
+  /* ================= TMDSAS backup list =================
+     From https://tmdsas.com/course-listings/Schools/UT_Austin.html. Used only when a course isn't one of
+     the HPO codes above. "*" = counts only if titled "Genomes and Evolution". */
+  function expand(spec){
+    // "BIO 211 311C; MIC 226*" -> ["BIO211","BIO311C","MIC226*"]
+    var out = [];
+    spec.split(";").forEach(function(group){
+      var parts = group.trim().split(/\s+/), prefixes = parts.shift().split("/");
+      prefixes.forEach(function(px){ parts.forEach(function(n){ out.push(px + n); }); });
+    });
+    return out;
+  }
+  var TMDSAS = {
+    bioLec: expand("BIO 211 212 214 226R* 226T* 302 303 311C 311D 315H 320 325 325H 325T 326M 326R 327D 327E 327G 329 330 332 333 335 336 337 339 339M 343M 344 345 345E 346 347 349 354C 357 359K 359R 360K 360M 361 361T 364 364E 365D 365N 365R 365S 365T 365W 366 366C 366D 366F 366R 367C 367F 367V 370 371M 373 379G 379J 437;" +
+                   "BME 339 365R 365S; CHE 339; MIC 226* 228* 319* 322 330 331 332 335 342 360 361 362 363 366;" +
+                   "NEU 330 335 365D 365R 365T 365W 366C 366D 366E 371M; TC 358*;" +
+                   "ZOO 320 321 322K 325 328K 333 341K 346 351 354 357 361K 362 365L 365N 370K 371L 373"),
+    bioLab: expand("BIO 126L 129L 130L 160L 165U 205 205L 206 206L 226L 230L 309HL 320L 349L 365L; MIC 119K 122K 129K 130K 160K; NEU 365L 366S; ZOO 125L 165P"),
+    bioCombo: expand("BIO 309H 323L 325L 331L 340L 341 353L 361L 366L 366S 368L 371L 373L 438L 446L 448L 455L 456L 478L; MIC 321 361K 368; NEU 366L 466G; ZOO 225L 325L 265P 369 436 440 432 453"),
+    bchem: expand("BCH 339F 339J 339M 339N 369; CH 339K 339L 369; PHR 251C 341C"),
+    genChem: expand("CH 153K 154K 301C 301H 302C 302H 204 317 353M"),
+    orgo: expand("CH 110K 110L 118K 118L 128K 128L 210C 220C 310M 310N 318M 318N 320M 320N 328M 328N 610A 610B 618A 618B"),
+    phys: expand("PHY 101L 102M 102N 103M 103N 105M 105N 116L 117M 117N 301 302K 302L 303K 303L 316 317K 317L"),
+    stats: expand("BIO 483; BME 335; CE 311S; CHE 253K; CSE 384R 384S; EE 351K; EDP 371; GOV 350K; NSC 309; PGE 337;" +
+                  "PSY 317 317L 384M 418 420M 458; M 316 358K 378K 384C 384D; ME 335;" +
+                  "SDS/SSC 301 302 302F 303 304 305 306 313 318M 320E 321 322E 324E 325H 328M 378 384; SOC 317L; STA 301 309 309H 371G 371H; TC 310"),
+    notMet: expand("ANT 301; BCH 364D 364F; BIO/PBH 354; BIO 372C 377; BME 344 353 355 365 366; CH 368; CHE 277K 377K 377L; EDP 380C; EM 306; ME 316T;" +
+                   "NEU 137 177 179H 237 277 279H 337 366M 366N 367F 367V 377 379H 437 477; PSY 332C 353K 359H 379H; UGS 303")
+  };
+  // life-science departments that cross-list each other; within these, a matching course number is enough (INB 359K = BIO 359K)
+  var BIO_FAMILY = /^(BIO|INB|MBS|NEU|ZOO|MIC)(\d.*)$/;
+
+  function findCode(list, code, title){
+    for(var i=0;i<list.length;i++){
+      var entry = list[i], star = entry.slice(-1) === "*", c = star ? entry.slice(0,-1) : entry;
+      if(c !== code) continue;
+      if(star && !/genomes\s*(and|&)\s*evolution/i.test(title||"")) return null;
+      if(code === "NSC309" && !/statistic/i.test(title||"")) return null;
+      return c;
+    }
+    return null;
+  }
+  // same number in another life-science department: returns the TMDSAS code it matched (e.g. "BIO359K")
+  function findCrossListed(list, code, title, px){
+    var m = code.match(BIO_FAMILY); if(!m) return null;
+    return findCode(list, px + m[2], title);
+  }
+  // lecture vs lab by credit hours for chem/physics lists: <=2 hrs lab, 3 lecture, 4+ lecture/lab combined
+  function byHours(lec, lab, hrs){
+    if(hrs <= 2) return [[lab, hrs]];
+    if(hrs >= 4) return [[lec, hrs - 1], [lab, 1]];
+    return [[lec, hrs]];
+  }
+  // -> list of {req, hrs, listedAs, split} for a course that isn't an HPO code
+  function tmdsasMatch(course){
+    var code = normCode(course.code), title = course.title, hrs = parseFloat(course.hours) || 0;
+    if(TMDSAS.notMet.indexOf(code) >= 0) return [];
+    var hits = [], found;
+    function add(pairs, listedAs){
+      pairs.forEach(function(p){ hits.push({ req:p[0], hrs:p[1], listedAs:listedAs, split: pairs.length > 1 }); });
+    }
+    var exactLists = [
+      ["bioLec",  function(){ return [["bio-lec", hrs]]; }],
+      ["bioLab",  function(){ return [["bio-lab", hrs]]; }],
+      ["bioCombo",function(){ return hrs > 1 ? [["bio-lec", hrs - 1], ["bio-lab", 1]] : [["bio-lab", hrs]]; }],
+      ["bchem",   function(){ return [["bchem", hrs]]; }],
+      ["genChem", function(){ return byHours("chem-lec", "chem-lab", hrs); }],
+      ["orgo",    function(){ return byHours("orgo-lec", "orgo-lab", hrs); }],
+      ["phys",    function(){ return byHours("phys-lec", "phys-lab", hrs); }],
+      ["stats",   function(){ return [["math", hrs]]; }]
+    ];
+    for(var i=0;i<exactLists.length;i++){
+      found = findCode(TMDSAS[exactLists[i][0]], code, title);
+      if(found){ add(exactLists[i][1](), found); return hits; }
+    }
+    // codes win over prefixes: try the same course number under another life-science department
+    // BIO is checked first since INB/MBS courses are almost always cross-listed with BIO
+    var bioLists = exactLists.slice(0,3), order = ["BIO","NEU","ZOO","MIC","INB","MBS"];
+    for(var o=0;o<order.length;o++){
+      for(var j=0;j<bioLists.length;j++){
+        found = findCrossListed(TMDSAS[bioLists[j][0]], code, title, order[o]);
+        if(found){ add(bioLists[j][1](), found); return hits; }
+      }
+    }
+    return hits;
+  }
 
   var BAD_GRADES = {"C-":1,"D+":1,"D":1,"D-":1,"F":1,"NC":1,"W":1,"I":1,"Q":1,"X":1};
 
@@ -834,6 +920,14 @@
 
   /* ================= requirement computation ================= */
   function computeRequirements(){
+    // which requirements each course counts toward: HPO codes take priority, TMDSAS list is the backup
+    var hpoHit = state.courses.map(function(course){
+      var code = normCode(course.code);
+      return REQUIREMENTS.some(function(req){ return req.exact && req.exact.indexOf(code) >= 0; });
+    });
+    var backup = state.courses.map(function(course, idx){
+      return (!hpoHit[idx] && normCode(course.code)) ? tmdsasMatch(course) : [];
+    });
     return REQUIREMENTS.map(function(req){
       var matched = [];
       var sumHours = 0, plannedHours = 0;
@@ -841,18 +935,23 @@
       state.courses.forEach(function(course, idx){
         var code = normCode(course.code);
         if(!code) return;
+        var hrs = parseFloat(course.hours) || 0, via = null;
         var isMatch = (req.exact && req.exact.indexOf(code) >= 0) ||
-                      (req.prefix && req.prefix.test(code) && !(req.prefixExclude && req.prefixExclude.indexOf(code) >= 0));
+                      (!hpoHit[idx] && req.prefix && req.prefix.test(code) && TMDSAS.notMet.indexOf(code) < 0);
+        if(!isMatch){
+          for(var b=0;b<backup[idx].length;b++){
+            if(backup[idx][b].req === req.id){ via = backup[idx][b]; hrs = via.hrs; isMatch = true; break; }
+          }
+        }
         if(isMatch){
-          var hrs = parseFloat(course.hours) || 0;
           if(isPlanned(course)){
             plannedHours += hrs;
-            matched.push({ course: course, idx: idx, planned: true, counted: false, hrs: hrs });
+            matched.push({ course: course, idx: idx, planned: true, counted: false, hrs: hrs, via: via });
             return;
           }
           var counted = gradeCounts(course);
           if(counted) sumHours += hrs;
-          matched.push({ course: course, idx: idx, counted: counted, exam: isExamCredit(course), ip: isInProgress(course), hrs: hrs });
+          matched.push({ course: course, idx: idx, counted: counted, exam: isExamCredit(course), ip: isInProgress(course), hrs: hrs, via: via });
         } else if(req.altPattern && req.altPattern.test(code)){
           altFlag = course;
         }
@@ -865,6 +964,13 @@
 
   /* ================= requirement ledger ================= */
   function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  function tmdsasFlag(m){
+    var bits = ["TMDSAS list"];
+    if(m.via.listedAs !== normCode(m.course.code)) bits.push("as " + prettyCode(m.via.listedAs));
+    if(m.via.split) bits.push("lecture/lab split");
+    return '<span class="flag tm" title="Not on the HPO page; counted from the TMDSAS UT Austin course list">'+esc(bits.join(" · "))+'</span>';
+  }
 
   function renderDashboard(){
     var results = computeRequirements();
@@ -899,7 +1005,7 @@
       } else {
         r.matched.forEach(function(m){
           if(m.planned){
-            html += '<label class="matched-item planned" title="Uncheck to remove this planned course"><input type="checkbox" checked data-unplan="'+m.idx+'"><span class="mcode">'+esc(m.course.code)+'</span><span>'+m.hrs.toFixed(1)+' hrs</span><span class="flag plan">planned</span></label>';
+            html += '<label class="matched-item planned" title="Uncheck to remove this planned course"><input type="checkbox" checked data-unplan="'+m.idx+'"><span class="mcode">'+esc(m.course.code)+'</span><span>'+m.hrs.toFixed(1)+' hrs</span><span class="flag plan">planned</span>'+(m.via ? tmdsasFlag(m) : '')+'</label>';
             return;
           }
           var cls = m.counted ? "matched-item" : "matched-item excluded";
@@ -907,6 +1013,7 @@
           if(!m.counted){ html += '<span class="flag">below C minimum</span>'; }
           else if(m.ip){ html += '<span class="flag ip">in progress</span>'; }
           else if(m.exam){ html += '<span class="flag">exam credit</span>'; }
+          if(m.via) html += tmdsasFlag(m);
           html += '</div>';
         });
       }
