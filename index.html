@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>UT Pre-Med Requirements Check</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+  /* layout: burnt-orange header -> intake card (upload/paste/table) -> requirement ledger grid -> footnote */
+  :root{
+    --bg:#FFFFFF;
+    --surface:#FFFFFF;
+    --surface-2:#FBF5F0;
+    --ink:#333F48;
+    --ink-soft:#5F6B73;
+    --line:#E8DED6;
+    --accent:#BF5700;
+    --accent-ink:#FFFFFF;
+    --good:#2E6B45;
+    --good-bg:#E4F1E7;
+    --warn:#9A5B00;
+    --warn-bg:#FDF0DC;
+    --bad:#A13626;
+    --bad-bg:#FAE8E4;
+    --info:#2F5D8A;
+    --info-bg:#E3ECF6;
+    --font-display:'Fraunces', Georgia, serif;
+    --font-body:'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+    --font-mono:'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
+    --hero:#BF5700;
+    --hero-ink:#FFFFFF;
+    color-scheme: light;
+  }
+  /* dark mode is opt-in via the header toggle; the burnt-orange banner stays the same in both */
+  :root[data-theme="dark"]{
+    --bg:#171412; --surface:#211D1A; --surface-2:#2A2521;
+    --ink:#F3ECE6; --ink-soft:#B9AEA5; --line:#3A332D;
+    --accent:#F2873A; --accent-ink:#1E1206;
+    --good:#7FCF98; --good-bg:#1D3326;
+    --warn:#F0BE63; --warn-bg:#3A2C10;
+    --bad:#F19385; --bad-bg:#3B221C;
+    --info:#8DB8E6; --info-bg:#1C2A3A;
+    color-scheme: dark;
+  }
+
+  *{ box-sizing:border-box; }
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--font-body);
+    margin:0;
+    padding-inline:20px;
+    padding-block:0 60px;
+    min-width:0;
+  }
+  .wrap{ max-width:900px; margin:0 auto; display:flex; flex-direction:column; gap:28px; min-width:0; }
+
+  /* ---------- header ---------- */
+  .hero{
+    background:var(--hero); color:var(--hero-ink);
+    margin:0 -20px 28px; padding:32px 20px 28px;
+  }
+  .hero-inner{ max-width:900px; margin:0 auto; display:flex; justify-content:space-between; align-items:flex-start; gap:16px; }
+  .hero-text{ display:flex; flex-direction:column; gap:10px; min-width:0; }
+  .theme-toggle{
+    flex:none; display:inline-flex; align-items:center; gap:6px;
+    background:rgba(255,255,255,.14); color:var(--hero-ink); border:1px solid rgba(255,255,255,.45);
+    border-radius:99px; padding:6px 12px; font-size:12px; font-weight:600;
+  }
+  .theme-toggle:hover{ background:rgba(255,255,255,.24); border-color:var(--hero-ink); }
+  .theme-toggle svg{ width:14px; height:14px; }
+  h1{
+    font-family:var(--font-display); font-weight:600; font-size:clamp(28px,5vw,42px);
+    line-height:1.08; margin:0; text-wrap:balance;
+  }
+  .hero a{ color:var(--hero-ink); font-size:14.5px; font-weight:500; text-underline-offset:3px; word-break:break-word; }
+  .hero a:hover{ text-decoration-thickness:2px; }
+
+  /* ---------- card ---------- */
+  .card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    padding:20px; min-width:0;
+  }
+  .card h2{
+    font-family:var(--font-display); font-weight:600; font-size:19px; margin:0 0 4px;
+  }
+  .card .hint{ color:var(--ink-soft); font-size:13px; margin:0 0 14px; line-height:1.5; }
+
+  /* ---------- intake ---------- */
+  .dropzone{
+    border:1.5px dashed var(--line); border-radius:12px; padding:22px 16px;
+    display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center;
+    cursor:pointer; transition:border-color .15s, background .15s; background:var(--surface-2);
+  }
+  .dropzone:hover, .dropzone.drag{ border-color:var(--accent); background:color-mix(in srgb, var(--accent) 7%, var(--surface-2)); }
+  .dropzone .big{ font-weight:600; font-size:15px; }
+  .dropzone .small{ color:var(--ink-soft); font-size:12.5px; }
+  input[type=file]{ display:none; }
+
+  .intake-row{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px; }
+  button{
+    font-family:var(--font-body); font-size:13.5px; font-weight:600; cursor:pointer;
+    border-radius:9px; border:1px solid var(--line); background:var(--surface);
+    color:var(--ink); padding:9px 14px; transition:background .12s, border-color .12s, transform .05s;
+  }
+  button:hover{ border-color:var(--accent); }
+  button:active{ transform:translateY(1px); }
+  button.primary{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
+  button.primary:hover{ filter:brightness(1.05); }
+  button.ghost{ background:transparent; }
+  button.small{ padding:5px 10px; font-size:12px; border-radius:7px; }
+  button:disabled{ opacity:.45; cursor:not-allowed; }
+
+  textarea{
+    width:100%; min-height:120px; font-family:var(--font-mono); font-size:12.5px;
+    border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--surface);
+    color:var(--ink); resize:vertical;
+  }
+  .paste-box{ margin-top:12px; display:none; flex-direction:column; gap:8px; }
+  .paste-box.open{ display:flex; }
+
+  .toast{
+    font-size:12.5px; color:var(--good); font-weight:600; display:none; align-items:center; gap:6px;
+  }
+  .toast.show{ display:flex; }
+  .toast.err{ color:var(--bad); }
+  button.danger:hover{ border-color:var(--bad); color:var(--bad); }
+
+  /* ---------- add-course panel ---------- */
+  .add-panel{
+    margin-top:14px; border:1px solid var(--line); border-radius:12px; padding:16px;
+    background:var(--surface-2); display:flex; flex-direction:column; gap:12px;
+  }
+  .add-panel[hidden]{ display:none; }
+  .add-head h3{ font-family:var(--font-display); font-size:16px; font-weight:600; margin:0; }
+  .add-hint{ font-size:12.5px; color:var(--ink-soft); }
+  .add-grid{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; }
+  .add-grid label{ display:flex; flex-direction:column; gap:4px; font-size:11px; font-family:var(--font-mono); text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft); min-width:0; }
+  .add-grid .f-wide{ grid-column:span 2; }
+  .add-grid input, .add-grid select{
+    font-family:var(--font-body); font-size:13.5px; text-transform:none; letter-spacing:0; color:var(--ink);
+    background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:8px 9px; width:100%; min-width:0;
+  }
+  .add-grid input:focus, .add-grid select:focus{ outline:none; border-color:var(--accent); }
+  .add-actions{ display:flex; gap:8px; }
+  @media (max-width:600px){
+    .add-grid{ grid-template-columns:repeat(2, minmax(0,1fr)); }
+  }
+  .empty-row td{ text-align:center; color:var(--ink-soft); font-style:italic; padding:18px; }
+
+  /* ---------- options for unmet requirements ---------- */
+  .options{ display:flex; flex-direction:column; gap:6px; border-top:1px dashed var(--line); padding-top:10px; }
+  .options .opt-label{ font-family:var(--font-mono); font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; color:var(--ink-soft); }
+  .options .opt-path{ font-size:12.5px; line-height:1.45; }
+  .opt-chips{ display:flex; flex-wrap:wrap; gap:6px; }
+  .opt-chip{
+    font-family:var(--font-body); font-size:12px; font-weight:500; padding:4px 9px; border-radius:99px;
+    border:1px solid var(--line); background:var(--surface-2); color:var(--ink); text-align:left;
+  }
+  .opt-chip b{ font-family:var(--font-mono); font-weight:600; }
+  .opt-chip:hover{ border-color:var(--accent); background:color-mix(in srgb, var(--accent) 8%, var(--surface-2)); }
+
+  /* ---------- raw-text debug ---------- */
+  details.raw{ margin-top:12px; font-size:12.5px; }
+  details.raw summary{ cursor:pointer; color:var(--ink-soft); font-weight:600; }
+  details.raw .raw-hint{ color:var(--ink-soft); margin:8px 0; line-height:1.5; }
+  .raw-lines{
+    font-family:var(--font-mono); font-size:11.5px; line-height:1.55; max-height:280px; overflow:auto;
+    border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:var(--surface-2);
+    white-space:pre-wrap; word-break:break-word;
+  }
+  .raw-lines .hit{ color:var(--good); }
+  .raw-lines .miss{ color:var(--bad); font-weight:600; }
+
+  /* ---------- table ---------- */
+  .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; }
+  table{ border-collapse:collapse; width:100%; min-width:640px; font-size:13px; }
+  thead th{
+    text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.07em;
+    text-transform:uppercase; color:var(--ink-soft); background:var(--surface-2);
+    padding:9px 10px; border-bottom:1px solid var(--line); white-space:nowrap;
+  }
+  tbody td{ padding:5px 6px; border-bottom:1px solid var(--line); vertical-align:middle; }
+  tbody tr:last-child td{ border-bottom:none; }
+  tbody input, tbody select{
+    font-family:var(--font-body); font-size:12.5px; border:1px solid transparent; background:transparent;
+    color:var(--ink); padding:5px 6px; border-radius:6px; width:100%; min-width:0;
+  }
+  tbody input:focus, tbody select:focus{ outline:none; border-color:var(--accent); background:var(--surface); }
+  td.hours input, td.hours{ font-family:var(--font-mono); font-variant-numeric:tabular-nums; }
+  td.code input{ font-family:var(--font-mono); font-weight:600; }
+  col.c-term{width:11%} col.c-code{width:13%} col.c-title{width:34%} col.c-grade{width:9%} col.c-type{width:17%} col.c-hours{width:8%} col.c-del{width:6%}
+  .del-btn{ background:none; border:none; color:var(--ink-soft); font-size:15px; padding:2px 6px; border-radius:6px; }
+  .del-btn:hover{ color:var(--bad); border-color:transparent; }
+
+  .list-toggle{
+    margin-top:14px; width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:11px 14px;
+    font-size:13.5px; font-weight:600; color:var(--ink); text-align:left;
+  }
+  .list-toggle-action{ display:inline-flex; align-items:center; gap:4px; color:var(--accent); font-size:12.5px; white-space:nowrap; }
+  .list-toggle svg{ width:16px; height:16px; transition:transform .18s; }
+  .list-toggle[aria-expanded="true"] svg{ transform:rotate(180deg); }
+  #course-list[hidden]{ display:none; }
+
+  /* ---------- ledger ---------- */
+  .ledger-head{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  .group-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:14px; }
+  .req-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px;
+    display:flex; flex-direction:column; gap:10px; min-width:0;
+  }
+  .req-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
+  .req-name .group{ font-size:11px; color:var(--ink-soft); font-family:var(--font-mono); letter-spacing:.04em; text-transform:uppercase; }
+  .req-name .part{ font-family:var(--font-display); font-size:17px; font-weight:600; }
+  .chip{
+    font-size:11px; font-weight:700; letter-spacing:.03em; padding:4px 9px; border-radius:99px;
+    white-space:nowrap; font-family:var(--font-mono);
+  }
+  .chip.met{ color:var(--good); background:var(--good-bg); }
+  .chip.partial{ color:var(--warn); background:var(--warn-bg); }
+  .chip.missing{ color:var(--bad); background:var(--bad-bg); }
+
+  .track{ height:8px; border-radius:99px; background:var(--surface-2); overflow:hidden; }
+  .fill{ height:100%; border-radius:99px; background:var(--accent); transition:width .25s; }
+  .fill.met{ background:var(--good); }
+
+  .hrs-line{ display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:12px; font-variant-numeric:tabular-nums; color:var(--ink-soft); }
+  .hrs-line b{ color:var(--ink); }
+
+  .matched-list{ display:flex; flex-direction:column; gap:4px; }
+  .matched-item{ display:flex; gap:6px; align-items:baseline; font-size:12.5px; flex-wrap:wrap; }
+  .matched-item .mcode{ font-family:var(--font-mono); font-weight:600; }
+  .matched-item .flag{ font-size:10.5px; color:var(--warn); background:var(--warn-bg); padding:1px 6px; border-radius:99px; }
+  .matched-item .flag.ip{ color:var(--info); background:var(--info-bg); }
+  .matched-item.excluded{ color:var(--ink-soft); text-decoration:line-through; }
+  .matched-item.excluded .flag{ color:var(--bad); background:var(--bad-bg); }
+  .empty-need{ font-size:12.5px; color:var(--ink-soft); font-style:italic; }
+  .req-note{ font-size:11.5px; color:var(--ink-soft); line-height:1.45; border-top:1px solid var(--line); padding-top:8px; }
+
+  /* ---------- footer ---------- */
+  footer{ font-size:12px; color:var(--ink-soft); line-height:1.6; border-top:1px solid var(--line); padding-top:16px; }
+  footer a{ color:var(--accent); }
+
+  @media (max-width:480px){
+    body{ padding-inline:16px; }
+    .req-top{ flex-direction:column; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h1>UT Pre-Med Requirements Check</h1>
+      <a href="https://healthprofessions.utexas.edu/health-professions/pre-medical-pathway/pre-med-course-requirements" target="_blank" rel="noopener">UT Health Professions Office &middot; Pre-med course requirements &nearr;</a>
+    </div>
+    <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode"></button>
+  </div>
+</header>
+
+<div class="wrap">
+
+
+  <div class="card">
+    <h2>Your coursework</h2>
+    <p class="hint">Upload your unofficial transcript PDF, paste its text, or add courses one at a time &mdash; the requirement check updates live. Courses with no grade yet count as <b>in progress</b>.</p>
+
+    <div class="dropzone" id="dropzone" tabindex="0">
+      <div class="big" id="dz-label">Drop a transcript PDF here, or click to choose a file</div>
+      <div class="small">Nothing leaves your browser &mdash; the PDF is read locally.</div>
+      <input type="file" id="file-input" accept="application/pdf">
+    </div>
+
+    <div class="intake-row">
+      <button class="ghost small" id="toggle-paste">Paste text instead</button>
+      <button class="ghost small" id="add-row">+ Add a course</button>
+      <button class="ghost small danger" id="clear-all">Clear all courses</button>
+      <span class="toast" id="toast"><span id="toast-msg"></span><button class="small ghost" id="toast-undo" hidden>Undo</button></span>
+    </div>
+
+    <form class="add-panel" id="add-panel" hidden autocomplete="off">
+      <div class="add-head">
+        <h3>Add a course</h3>
+        <span class="add-hint">Pick a pre-med course from the list, or type any course code.</span>
+      </div>
+      <div class="add-grid">
+        <label class="f-wide">Pre-med course
+          <select id="add-pick"><option value="">Choose from the list…</option></select>
+        </label>
+        <label>Course code
+          <input id="add-code" placeholder="e.g. CH 320M" required>
+        </label>
+        <label class="f-wide">Title
+          <input id="add-title" placeholder="e.g. Organic Chemistry I">
+        </label>
+        <label>Grade
+          <select id="add-grade"></select>
+        </label>
+        <label>Type
+          <select id="add-type">
+            <option>In residence</option>
+            <option>Credit by exam</option>
+            <option>Transfer credit</option>
+            <option>In progress</option>
+          </select>
+        </label>
+        <label>Hours
+          <input id="add-hours" inputmode="decimal" placeholder="3.0" required>
+        </label>
+        <label>Term
+          <input id="add-term" list="term-list" placeholder="e.g. Fall 2026">
+          <datalist id="term-list"></datalist>
+        </label>
+      </div>
+      <div class="add-actions">
+        <button type="submit" class="primary small">Add course</button>
+        <button type="button" class="ghost small" id="add-cancel">Cancel</button>
+      </div>
+    </form>
+
+    <div class="paste-box" id="paste-box">
+      <textarea id="paste-text" placeholder="Paste the raw text of your transcript here (select-all + copy from the PDF viewer works fine)"></textarea>
+      <div style="display:flex; gap:8px;">
+        <button class="primary small" id="parse-paste">Parse pasted text</button>
+        <span class="small" style="color:var(--ink-soft); font-size:12px;" id="pdfjs-status"></span>
+      </div>
+    </div>
+
+    <details class="raw" id="raw-details" hidden>
+      <summary>Show what the reader saw</summary>
+      <p class="raw-hint">Green lines were read as courses. <b style="color:var(--bad)">Red</b> lines start with a course code but couldn't be read &mdash; if a class is missing, it's probably one of those. Add it by hand, or copy these lines to whoever is fixing the tool.</p>
+      <div class="raw-lines" id="raw-lines"></div>
+    </details>
+
+    <button type="button" class="list-toggle" id="list-toggle" aria-expanded="false" aria-controls="course-list">
+      <span id="row-count"></span>
+      <span class="list-toggle-action"><span id="list-toggle-label">Show all</span> <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
+    </button>
+    <div id="course-list" hidden>
+      <div class="table-scroll" style="margin-top:10px;">
+        <table>
+          <colgroup>
+            <col class="c-term"><col class="c-code"><col class="c-title"><col class="c-grade"><col class="c-type"><col class="c-hours"><col class="c-del">
+          </colgroup>
+          <thead>
+            <tr><th>Term</th><th>Course</th><th>Title</th><th>Grade</th><th>Type</th><th>Hrs</th><th></th></tr>
+          </thead>
+          <tbody id="course-rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="ledger-head">
+      <h2 style="margin:0;">Requirement ledger</h2>
+      <span class="chip" id="overall-chip" style="background:var(--surface-2); color:var(--ink);"></span>
+    </div>
+    <p class="hint">Most Texas medical schools' baseline prerequisites, per HPO. Individual schools add their own requirements &mdash; always check target schools directly. In-progress courses count toward a requirement but are flagged.</p>
+    <div class="group-grid" id="req-grid"></div>
+  </div>
+
+  <footer>
+    All medical-school prerequisites generally require a grade of <b style="color:var(--ink);">C or better</b> (some schools set a higher bar). Credit-by-exam (AP/IB/CLEP) courses count here and are flagged &mdash; many Texas schools accept them, but policies vary, especially out of state. This is an independent study tool built from the publicly posted guidance at
+    <a href="https://healthprofessions.utexas.edu/health-professions/pre-medical-pathway/pre-med-course-requirements" target="_blank" rel="noopener">healthprofessions.utexas.edu</a>, not an official university tool or admissions guarantee &mdash; confirm everything with your academic advisor and each target school.
+  </footer>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  /* ================= requirement definitions, from the HPO course-requirements page ================= */
+  var REQUIREMENTS = [
+    { id:"bio-lec",  group:"Biological Sciences", part:"Lecture", hours:12,
+      exact:["BIO311C","BIO311D","BIO325","BIO315H","BIO325H"],
+      prefix:/^(BIO|INB|MBS)3[2-9]\d[A-Z]?$/, prefixExclude:["BIO325"],
+      note:"BIO 311C + BIO 311D + BIO 325 + 3 UD hrs (or BIO 315H + BIO 325H + 6 UD hrs). BIO 325 isn't always explicitly required, but it's the prerequisite for most upper-division bio electives." },
+    { id:"bio-lab",  group:"Biological Sciences", part:"Lab", hours:2,
+      exact:["BIO206L","BIO206LA","BIO206LB"],
+      prefix:/^(BIO|INB|MBS)3[2-9]\d[A-Z]?L$/,
+      note:"BIO 206L, or 2 hrs of upper-division BIO/INB/MBS lab. Must be formal lab coursework &mdash; research credit (e.g. BIO 377) doesn't count." },
+    { id:"chem-lec", group:"General Chemistry", part:"Lecture", hours:6,
+      exact:["CH301","CH302","CH301H","CH302H","CH301C","CH302C"] },
+    { id:"chem-lab", group:"General Chemistry", part:"Lab", hours:2,
+      exact:["CH204","CH104M","CH104N"],
+      note:"CH 204, or CH 104M + CH 104N taken alongside the matching lecture semester." },
+    { id:"orgo-lec", group:"Organic Chemistry", part:"Lecture", hours:6,
+      exact:["CH320M","CH320N","CH328M","CH328N"] },
+    { id:"orgo-lab", group:"Organic Chemistry", part:"Lab", hours:2,
+      exact:["CH220C","CH128K","CH128L"],
+      note:"CH 220C seats fill fast &mdash; register as soon as you meet the prerequisite." },
+    { id:"bchem",    group:"Biochemistry", part:"Lecture", hours:3,
+      exact:["BCH369","BCH339F"],
+      note:"Don't double-count BCH hours toward biology or chemistry &mdash; keep those requirements independently satisfied." },
+    { id:"phys-lec", group:"General Physics", part:"Lecture", hours:6,
+      exact:["PHY302K","PHY302L","PHY317K","PHY317L","PHY303K","PHY303L","PHY301","PHY316"] },
+    { id:"phys-lab", group:"General Physics", part:"Lab", hours:2,
+      exact:["PHY105M","PHY105N","PHY101L","PHY116L"] },
+    { id:"math",     group:"Mathematics", part:"Statistics", hours:3,
+      exact:["SDS301","SDS302F","SDS320E","EDP371"],
+      altPattern:/^M362K$/,
+      altNote:"is on your transcript but isn't on HPO's approved statistics list (SDS 301, SDS 302F, SDS 320E, EDP 371). Some schools accept it as equivalent &mdash; confirm with target schools before relying on it." },
+    { id:"english",  group:"English", part:"Rhetoric, Composition & Literature", hours:6,
+      exact:["RHE306","RHE309J","E316L","E316M","E316N"],
+      prefix:/^(RHE\d[\dA-Z]*|E3\d\d[A-Z]?)$/ },
+    { id:"psych",    group:"Psychology", part:"Behavioral science", hours:3,
+      exact:["PSY301"], prefix:/^PSY\d[\dA-Z]*$/,
+      note:"Not strictly required by most Texas schools, but covered on the MCAT and expected by several out-of-state programs." },
+    { id:"soc",      group:"Sociology", part:"Behavioral science", hours:3,
+      exact:["SOC302"], prefix:/^SOC\d[\dA-Z]*$/,
+      note:"Not strictly required by most Texas schools, but covered on the MCAT and expected by several out-of-state programs." }
+  ];
+
+  /* course titles/hours for the add-course picker and the "ways to finish" chips */
+  var CATALOG = {
+    BIO311C:["Introductory Biology I",3], BIO311D:["Introductory Biology II",3], BIO325:["Genetics",3],
+    BIO315H:["Advanced Intro to Biology I: Honors",3], BIO325H:["Genetics: Honors",3],
+    BIO206L:["Introductory Laboratory Experiments in Biology",2],
+    CH301:["Principles of Chemistry I",3], CH302:["Principles of Chemistry II",3],
+    CH301H:["Principles of Chemistry I: Honors",3], CH302H:["Principles of Chemistry II: Honors",3],
+    CH204:["Introduction to Chemical Practice",2], CH104M:["Intro to Chemical Practice I",1], CH104N:["Intro to Chemical Practice II",1],
+    CH320M:["Organic Chemistry I",3], CH320N:["Organic Chemistry II",3],
+    CH328M:["Organic Chemistry I",3], CH328N:["Organic Chemistry II",3],
+    CH220C:["Organic Chemistry Laboratory",2], CH128K:["Organic Chemistry Laboratory I",1], CH128L:["Organic Chemistry Laboratory II",1],
+    BCH369:["Fundamentals of Biochemistry",3], BCH339F:["Biochemistry",3],
+    PHY317K:["General Physics I",3], PHY317L:["General Physics II",3],
+    PHY302K:["General Physics: Technical Course I",3], PHY302L:["General Physics: Technical Course II",3],
+    PHY303K:["Engineering Physics I",3], PHY303L:["Engineering Physics II",3],
+    PHY301:["Mechanics",3], PHY316:["Electricity and Magnetism",3],
+    PHY105M:["Laboratory for Physics 302K/303K/317K",1], PHY105N:["Laboratory for Physics 302L/303L/317L",1],
+    PHY101L:["Laboratory for Physics 301",1], PHY116L:["Laboratory for Physics 316",1],
+    SDS301:["Elementary Statistics",3], SDS302F:["Foundations of Data Analysis",3],
+    SDS320E:["Elementary Statistical Methods",3], EDP371:["Introduction to Statistics",3],
+    RHE306:["Rhetoric and Writing",3], RHE309J:["Rhetoric of Literature",3],
+    E316L:["British Literature",3], E316M:["American Literature",3], E316N:["World Literature",3],
+    PSY301:["Introduction to Psychology",3], SOC302:["Introduction to the Study of Society",3]
+  };
+  // the realistic routes to finish each requirement, plus which catalog courses to offer as chips
+  var PATHS = {
+    "bio-lec":  { text:"BIO 311C + BIO 311D + BIO 325, plus 3 hrs of any upper-division BIO / INB / MBS lecture.", offer:["BIO311C","BIO311D","BIO325","BIO315H","BIO325H"] },
+    "bio-lab":  { text:"BIO 206L, or 2 hrs of upper-division BIO / INB / MBS lab (course numbers ending in L).", offer:["BIO206L"] },
+    "chem-lec": { text:"CH 301 + CH 302 (or the honors versions). AP Chemistry credit counts.", offer:["CH301","CH302","CH301H","CH302H"] },
+    "chem-lab": { text:"CH 204, or CH 104M + CH 104N.", offer:["CH204","CH104M","CH104N"] },
+    "orgo-lec": { text:"Pick one sequence: CH 320M + CH 320N, or CH 328M + CH 328N.", offer:["CH320M","CH320N","CH328M","CH328N"] },
+    "orgo-lab": { text:"CH 220C, or CH 128K + CH 128L.", offer:["CH220C","CH128K","CH128L"] },
+    "bchem":    { text:"BCH 369 or BCH 339F.", offer:["BCH369","BCH339F"] },
+    "phys-lec": { text:"One two-semester sequence: PHY 317K + 317L, PHY 302K + 302L, PHY 303K + 303L, or PHY 301 + 316.", offer:["PHY317K","PHY317L","PHY302K","PHY302L","PHY303K","PHY303L","PHY301","PHY316"] },
+    "phys-lab": { text:"For PHY 302, 303 or 317: PHY 105M + PHY 105N. For PHY 301 / 316: PHY 101L + PHY 116L.", offer:["PHY105M","PHY105N","PHY101L","PHY116L"] },
+    "math":     { text:"One of SDS 301, SDS 302F, SDS 320E, or EDP 371.", offer:["SDS301","SDS302F","SDS320E","EDP371"] },
+    "english":  { text:"6 hrs total: RHE 306 plus one more RHE course or a 300-level E course (E 316L/M/N are the usual picks). AP English credit counts.", offer:["RHE306","RHE309J","E316L","E316M","E316N"] },
+    "psych":    { text:"PSY 301, or any other PSY course.", offer:["PSY301"] },
+    "soc":      { text:"SOC 302, or any other SOC course.", offer:["SOC302"] }
+  };
+  function prettyCode(c){ return c.replace(/^([A-Z]+?)(\d)/, "$1 $2").replace(/^CS /, "C S "); }
+
+  var BAD_GRADES = {"C-":1,"D+":1,"D":1,"D-":1,"F":1,"NC":1,"W":1,"I":1,"Q":1,"X":1};
+
+  function normCode(c){ return (c||"").replace(/\s+/g,"").toUpperCase(); }
+  function isInProgress(course){
+    var g = (course.grade||"").trim().toUpperCase();
+    return !g || g === "IP" || /progress|enrolled|current/i.test(course.type||"");
+  }
+  function gradeCounts(course){
+    if(isInProgress(course)) return true;
+    var g = (course.grade||"").trim().toUpperCase();
+    return !BAD_GRADES[g];
+  }
+  function isExamCredit(course){
+    return /exam|\bAP\b|\bIB\b|CLEP|test/i.test(course.type||"") ||
+           ((course.grade||"").trim().toUpperCase() === "CR" && !/resid/i.test(course.type||""));
+  }
+
+  /* ================= state ================= */
+  var state = { courses: [] };
+
+  function loadState(){
+    try{
+      var raw = localStorage.getItem("premed-courses-v1");
+      if(raw){ state.courses = JSON.parse(raw); return; }
+    }catch(e){}
+    state.courses = [];
+  }
+  function saveState(){
+    try{ localStorage.setItem("premed-courses-v1", JSON.stringify(state.courses)); }catch(e){}
+  }
+
+  /* ================= PDF / text parsing ================= */
+  var PDFJS_VERSION = "2.16.105";
+  var pdfjsReady = false;
+  function initPdfjs(){
+    pdfjsReady = typeof window.pdfjsLib !== "undefined";
+    return pdfjsReady;
+  }
+
+  /*PARSER-START*/
+  // A row starts with a course code ("C S 314", "CH 320M", "E 316L", "BIO311C"); the rest is
+  // read loosely from the right so rows with no grade (in progress), no unique number
+  // (credit by exam), or a single hours column still parse.
+  var CODE_RE = /^([A-Z]{1,3}(?: [A-Z]{1,3})?) ?(\d{3}[A-Z]{0,2})(?=\s|$)\s*(.*)$/;
+  var TYPE_RE = /\b(In[\s-]*residence|Credit[\s-]*by[\s-]*exam(?:ination)?|Exam(?:ination)?[\s-]*credit|Test[\s-]*credit|Advanced[\s-]*Placement|Transfer(?:[\s-]*credit)?|Course[\s-]*challenge|In[\s-]*progress|Currently[\s-]*enrolled|Enrolled)\b/i;
+  var GRADE_RE = /^([A-D][+-]?|F|CR|NC|W|Q|X|P|IP)$/;
+  var TERM_RE = /^(Fall|Spring|Summer|Winter)\s+(\d{4})\b/i;
+
+  function titleCase(s){
+    return s.toLowerCase().replace(/\b([a-z])/g, function(m,c){ return c.toUpperCase(); })
+            .replace(/\b(Ii|Iii|Iv)\b/g, function(r){ return r.toUpperCase(); });
+  }
+
+  function normalizeType(raw, grade){
+    if(!raw) return grade ? (grade === "CR" ? "Credit by exam" : "In residence") : "In progress";
+    var t = raw.toLowerCase();
+    if(/resid/.test(t)) return "In residence";
+    if(/exam|test|advanced/.test(t)) return "Credit by exam";
+    if(/transfer/.test(t)) return "Transfer credit";
+    if(/challenge/.test(t)) return "Course challenge";
+    return "In progress";
+  }
+
+  function parseCourseLine(line){
+    var m = line.match(CODE_RE);
+    if(!m) return null;
+    var rest = m[3];
+    var typeRaw = "";
+    var tm = rest.match(TYPE_RE);
+    if(tm){ typeRaw = tm[1]; rest = rest.replace(tm[0], " "); }
+    var toks = rest.split(/\s+/).filter(Boolean);
+    var nums = [], grade = "";
+    // peel numbers and at most one grade off the right-hand end
+    while(toks.length > 1){
+      var t = toks[toks.length-1];
+      if(/^\d+(\.\d+)?$/.test(t)){ nums.unshift(t); toks.pop(); continue; }
+      if(!grade && GRADE_RE.test(t)){ grade = t; toks.pop(); continue; }
+      break;
+    }
+    // hours: first value that looks like credit hours (has a decimal, or 1-2 digits); 4+ digit ints are unique numbers
+    var hours = null;
+    for(var i=0;i<nums.length;i++){
+      if(/\./.test(nums[i]) || nums[i].length <= 2){ hours = nums[i]; break; }
+    }
+    if(hours === null) return null;
+    if(grade === "IP") grade = "";
+    var title = toks.join(" ").replace(/[\s\-–—]+$/,"").trim();
+    if(!title) return null;
+    return {
+      code: (m[1] + " " + m[2]).replace(/\s+/g," "),
+      title: titleCase(title),
+      grade: grade,
+      type: normalizeType(typeRaw, grade),
+      hours: /\./.test(hours) ? hours : hours + ".0"
+    };
+  }
+
+  // returns {courses, report:[{line, status:"hit"|"miss"|"other"}]}
+  // A wrapped cell's first half lands on the line just above its row (e.g. "DISCRETE MATH FOR COMPUTER" /
+  // "C S 311 SCI B+ ..." or "Credit by" / "RHE 306 ... CR 20127 exam ..."), so stitch that line back in.
+  var FRAGMENT_RE = /^[A-Z0-9][A-Z0-9 ,.&'\/()+-]*$/;
+  function mergeFragment(frag, line){
+    var typeFrag = /(^|\s)Credit\s+by$/i.test(frag);
+    if(typeFrag){
+      frag = frag.replace(/\s*Credit\s+by$/i, "").trim();
+      line = line.replace(/\bexam(ination)?\b/i, "Credit by exam");
+    }
+    if(frag && FRAGMENT_RE.test(frag)){
+      var m = line.match(CODE_RE);
+      if(m) line = m[1] + " " + m[2] + " " + frag + " " + m[3];
+    }
+    return line;
+  }
+
+  function parseLinesToCourses(lines){
+    var out = [], report = [];
+    var currentTerm = "", pending = null;
+    for(var i=0;i<lines.length;i++){
+      var line = lines[i].replace(/\s+/g," ").trim();
+      if(!line) continue;
+      var tm = line.match(TERM_RE);
+      if(tm && !CODE_RE.test(line)){ currentTerm = titleCase(tm[1]) + " " + tm[2]; pending = null; report.push({line:line, status:"other"}); continue; }
+      if(!CODE_RE.test(line)){
+        if(pending){ report.push({line:pending, status:"other"}); }
+        pending = line;
+        continue;
+      }
+      if(pending){
+        var merged = mergeFragment(pending, line);
+        if(merged !== line){ report.push({line:pending, status:"frag"}); line = merged; }
+        else report.push({line:pending, status:"other"});
+        pending = null;
+      }
+      var c = parseCourseLine(line);
+      if(c){
+        c.term = currentTerm;
+        out.push(c);
+        report.push({line:line, status:"hit"});
+      } else {
+        report.push({line:line, status:"miss"});
+      }
+    }
+    if(pending) report.push({line:pending, status:"other"});
+    return { courses: out, report: report };
+  }
+  /*PARSER-END*/
+
+  function loadMainThreadWorker(){
+    if(window.pdfjsWorker) return Promise.resolve();
+    return new Promise(function(resolve, reject){
+      var sc = document.createElement("script");
+      sc.src = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/" + PDFJS_VERSION + "/pdf.worker.min.js";
+      sc.onload = function(){ resolve(); };
+      sc.onerror = function(){ reject(new Error("couldn't load the PDF reader")); };
+      document.head.appendChild(sc);
+    });
+  }
+
+  // pdf.js normally parses in a background worker, but a file opened from your computer or a sandboxed
+  // preview can block that ("Setting up fake worker failed"). Loading the worker code onto the page
+  // itself makes pdf.js parse in place, which works everywhere and is instant for a few-page transcript.
+  async function openPdf(arrayBuffer){
+    await loadMainThreadWorker();
+    return await window.pdfjsLib.getDocument({data:arrayBuffer}).promise;
+  }
+
+  async function extractPdfLines(arrayBuffer){
+    var pdf = await openPdf(arrayBuffer);
+    var lines = [];
+    for(var p=1; p<=pdf.numPages; p++){
+      var page = await pdf.getPage(p);
+      var tc = await page.getTextContent();
+      var buckets = [];
+      for(var k=0;k<tc.items.length;k++){
+        var item = tc.items[k];
+        if(!item.str || !item.str.trim()) continue;
+        var y = item.transform[5];
+        var placed = false;
+        for(var b=0;b<buckets.length;b++){
+          if(Math.abs(buckets[b].y - y) <= 3){ buckets[b].items.push(item); placed = true; break; }
+        }
+        if(!placed) buckets.push({y:y, items:[item]});
+      }
+      buckets.sort(function(a,b){ return b.y - a.y; });
+      for(var j=0;j<buckets.length;j++){
+        var its = buckets[j].items.slice().sort(function(a,c){ return a.transform[4]-c.transform[4]; });
+        var line = its.map(function(it){ return it.str; }).join(" ").replace(/\s+/g," ").trim();
+        if(line) lines.push(line);
+      }
+    }
+    return lines;
+  }
+
+  function showToast(msg, isErr, onUndo){
+    var t = document.getElementById("toast");
+    var undo = document.getElementById("toast-undo");
+    document.getElementById("toast-msg").textContent = msg;
+    t.className = "toast show" + (isErr ? " err" : "");
+    undo.hidden = !onUndo;
+    undo.onclick = onUndo ? function(){ onUndo(); t.className = "toast"; } : null;
+    clearTimeout(showToast._timer);
+    showToast._timer = setTimeout(function(){ t.className = "toast"; }, onUndo ? 9000 : 5200);
+  }
+
+  function renderReport(report){
+    var det = document.getElementById("raw-details");
+    var box = document.getElementById("raw-lines");
+    box.innerHTML = "";
+    report.forEach(function(r){
+      if(r.status === "frag") return;
+      var d = document.createElement("div");
+      if(r.status !== "other") d.className = r.status;
+      d.textContent = (r.status === "hit" ? "✓ " : r.status === "miss" ? "✗ " : "   ") + r.line;
+      box.appendChild(d);
+    });
+    det.hidden = false;
+    var misses = report.filter(function(r){ return r.status === "miss"; }).length;
+    if(misses) det.open = true;
+    return misses;
+  }
+
+  function applyParsed(result, sourceLabel){
+    var misses = renderReport(result.report);
+    if(result.courses.length === 0){
+      showToast("Couldn't find course rows in " + sourceLabel + ". Open “Show what the reader saw” below to see why.", true);
+      return;
+    }
+    state.courses = result.courses;
+    saveState();
+    renderAll();
+    var ip = result.courses.filter(isInProgress).length;
+    var msg = "Loaded " + result.courses.length + " courses from " + sourceLabel + (ip ? " (" + ip + " in progress)" : "") + ".";
+    if(misses) msg += " " + misses + " line" + (misses===1?"":"s") + " looked like courses but couldn't be read — see below.";
+    showToast(msg, misses > 0);
+  }
+
+  async function handlePdfFile(file){
+    document.getElementById("dz-label").textContent = "Reading " + file.name + "…";
+    if(!initPdfjs()){
+      showToast("PDF parsing unavailable here — paste the transcript text instead.", true);
+      document.getElementById("dz-label").textContent = "Drop a transcript PDF here, or click to choose a file";
+      document.getElementById("paste-box").classList.add("open");
+      return;
+    }
+    try{
+      var buf = await file.arrayBuffer();
+      var lines = await extractPdfLines(buf);
+      applyParsed(parseLinesToCourses(lines), file.name);
+    }catch(e){
+      showToast("Couldn't read that PDF (" + (e && e.message ? e.message : e) + ") — try pasting the text instead.", true);
+      document.getElementById("paste-box").classList.add("open");
+    }
+    document.getElementById("dz-label").textContent = "Drop a transcript PDF here, or click to choose a file";
+  }
+
+  /* ================= table rendering ================= */
+  function renderTable(){
+    var tbody = document.getElementById("course-rows");
+    tbody.innerHTML = "";
+    if(state.courses.length === 0){
+      tbody.innerHTML = '<tr class="empty-row"><td colspan="7">No courses yet &mdash; upload a transcript, paste its text, or add courses one at a time.</td></tr>';
+    }
+    state.courses.forEach(function(course, idx){
+      var tr = document.createElement("tr");
+
+      function cell(field, placeholder, extraClass){
+        var td = document.createElement("td");
+        if(extraClass) td.className = extraClass;
+        var input = document.createElement("input");
+        input.value = course[field] || "";
+        if(placeholder) input.placeholder = placeholder;
+        input.setAttribute("data-idx", idx);
+        input.setAttribute("data-field", field);
+        input.addEventListener("input", function(){
+          state.courses[idx][field] = input.value;
+          saveState();
+          renderDashboard();
+        });
+        td.appendChild(input);
+        return td;
+      }
+
+      tr.appendChild(cell("term"));
+      tr.appendChild(cell("code", null, "code"));
+      tr.appendChild(cell("title"));
+      tr.appendChild(cell("grade", "IP"));
+      tr.appendChild(cell("type"));
+      tr.appendChild(cell("hours", null, "hours"));
+
+      var delTd = document.createElement("td");
+      var delBtn = document.createElement("button");
+      delBtn.className = "del-btn";
+      delBtn.innerHTML = "&times;";
+      delBtn.title = "Remove row";
+      delBtn.addEventListener("click", function(){
+        state.courses.splice(idx,1);
+        saveState();
+        renderAll();
+      });
+      delTd.appendChild(delBtn);
+      tr.appendChild(delTd);
+
+      tbody.appendChild(tr);
+    });
+    var n = state.courses.length, ip = state.courses.filter(isInProgress).length;
+    document.getElementById("row-count").textContent = n + " course" + (n===1?"":"s") + " on record" + (ip ? " · " + ip + " in progress" : "");
+  }
+
+  /* ================= requirement computation ================= */
+  function computeRequirements(){
+    return REQUIREMENTS.map(function(req){
+      var matched = [];
+      var sumHours = 0;
+      var altFlag = null;
+      state.courses.forEach(function(course){
+        var code = normCode(course.code);
+        if(!code) return;
+        var isMatch = (req.exact && req.exact.indexOf(code) >= 0) ||
+                      (req.prefix && req.prefix.test(code) && !(req.prefixExclude && req.prefixExclude.indexOf(code) >= 0));
+        if(isMatch){
+          var counted = gradeCounts(course);
+          var hrs = parseFloat(course.hours) || 0;
+          if(counted) sumHours += hrs;
+          matched.push({ course: course, counted: counted, exam: isExamCredit(course), ip: isInProgress(course), hrs: hrs });
+        } else if(req.altPattern && req.altPattern.test(code)){
+          altFlag = course;
+        }
+      });
+      var status = sumHours >= req.hours ? "met" : (sumHours > 0 ? "partial" : "missing");
+      return { req: req, matched: matched, sumHours: sumHours, status: status, altFlag: altFlag };
+    });
+  }
+
+  /* ================= requirement ledger ================= */
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+
+  function renderDashboard(){
+    var results = computeRequirements();
+
+    var grid = document.getElementById("req-grid");
+    grid.innerHTML = "";
+    results.forEach(function(r){
+      var req = r.req;
+      var card = document.createElement("div");
+      card.className = "req-card";
+
+      var pct = Math.min(100, (r.sumHours / req.hours) * 100);
+      var statusLabel = r.status === "met" ? "Met" : (r.status === "partial" ? "In progress" : "Not started");
+
+      var html = '';
+      html += '<div class="req-top"><div class="req-name"><div class="group">'+req.group+'</div><div class="part">'+req.part+'</div></div>';
+      html += '<span class="chip '+r.status+'">'+statusLabel+'</span></div>';
+      html += '<div class="track"><div class="fill '+(r.status==="met"?"met":"")+'" style="width:'+pct+'%"></div></div>';
+      html += '<div class="hrs-line"><span><b>'+r.sumHours.toFixed(1)+'</b> / '+req.hours.toFixed(1)+' hrs</span>';
+      html += '<span>'+(req.hours - r.sumHours > 0 ? (req.hours - r.sumHours).toFixed(1) + ' hrs left' : 'complete')+'</span></div>';
+
+      html += '<div class="matched-list">';
+      if(r.matched.length === 0){
+        html += '<div class="empty-need">No matching coursework yet.</div>';
+      } else {
+        r.matched.forEach(function(m){
+          var cls = m.counted ? "matched-item" : "matched-item excluded";
+          html += '<div class="'+cls+'"><span class="mcode">'+esc(m.course.code)+'</span><span>'+m.hrs.toFixed(1)+' hrs</span>';
+          if(!m.counted){ html += '<span class="flag">below C minimum</span>'; }
+          else if(m.ip){ html += '<span class="flag ip">in progress</span>'; }
+          else if(m.exam){ html += '<span class="flag">exam credit</span>'; }
+          html += '</div>';
+        });
+      }
+      html += '</div>';
+
+      var path = PATHS[req.id];
+      if(r.status !== "met" && path){
+        var have = {};
+        r.matched.forEach(function(m){ if(m.counted) have[normCode(m.course.code)] = 1; });
+        html += '<div class="options"><div class="opt-label">Ways to finish &middot; '+(req.hours - r.sumHours).toFixed(1)+' hrs to go</div>';
+        html += '<div class="opt-path">'+path.text+'</div><div class="opt-chips">';
+        path.offer.forEach(function(code){
+          if(have[code]) return;
+          var info = CATALOG[code] || [code, 3];
+          html += '<button type="button" class="opt-chip" data-add="'+code+'" title="Add '+esc(prettyCode(code))+' to your courses">+ <b>'+esc(prettyCode(code))+'</b> '+esc(info[0])+' &middot; '+info[1]+' hr'+(info[1]===1?'':'s')+'</button>';
+        });
+        html += '</div></div>';
+      }
+
+      var noteParts = [];
+      if(req.note) noteParts.push(req.note);
+      if(r.altFlag) noteParts.push('<b>'+esc(r.altFlag.code)+'</b> '+req.altNote);
+      if(noteParts.length){
+        html += '<div class="req-note">'+noteParts.join(" ")+'</div>';
+      }
+
+      card.innerHTML = html;
+      grid.appendChild(card);
+    });
+
+    var metCount = results.filter(function(r){ return r.status==="met"; }).length;
+    var overallChip = document.getElementById("overall-chip");
+    overallChip.textContent = metCount + " / " + results.length + " met";
+  }
+
+  function renderAll(){
+    renderTable();
+    renderDashboard();
+  }
+
+  /* ================= add-course panel ================= */
+  var GRADE_OPTIONS = [["","In progress (no grade yet)"],["A"],["A-"],["B+"],["B"],["B-"],["C+"],["C"],["C-"],["D+"],["D"],["D-"],["F"],["CR","CR (credit, e.g. AP)"],["P","P (pass)"],["NC"],["W"],["Q"]];
+
+  function initAddPanel(){
+    var pick = document.getElementById("add-pick");
+    var seen = {};
+    REQUIREMENTS.forEach(function(req){
+      var path = PATHS[req.id]; if(!path) return;
+      var og = document.createElement("optgroup");
+      og.label = req.group + " — " + req.part;
+      path.offer.forEach(function(code){
+        if(seen[code]) return; seen[code] = 1;
+        var o = document.createElement("option");
+        o.value = code;
+        o.textContent = prettyCode(code) + " — " + (CATALOG[code] ? CATALOG[code][0] : "");
+        og.appendChild(o);
+      });
+      if(og.children.length) pick.appendChild(og);
+    });
+    var other = document.createElement("option");
+    other.value = "__other"; other.textContent = "Something else — I'll type the code";
+    pick.appendChild(other);
+
+    var gradeSel = document.getElementById("add-grade");
+    GRADE_OPTIONS.forEach(function(g){
+      var o = document.createElement("option"); o.value = g[0]; o.textContent = g[1] || g[0]; gradeSel.appendChild(o);
+    });
+
+    var typeSel = document.getElementById("add-type");
+    pick.addEventListener("change", function(){
+      if(pick.value === "__other"){ fillFromCode(""); document.getElementById("add-code").focus(); return; }
+      if(pick.value) fillFromCode(pick.value);
+    });
+    document.getElementById("add-code").addEventListener("change", function(e){
+      var code = normCode(e.target.value);
+      pick.value = CATALOG[code] ? code : (code ? "__other" : "");
+      if(CATALOG[code]) fillFromCode(code);
+    });
+    gradeSel.addEventListener("change", function(){
+      if(gradeSel.value === "") typeSel.value = "In progress";
+      else if(gradeSel.value === "CR" && typeSel.value !== "Transfer credit") typeSel.value = "Credit by exam";
+      else if(typeSel.value === "In progress") typeSel.value = "In residence";
+    });
+    document.getElementById("add-cancel").addEventListener("click", closeAddPanel);
+    document.getElementById("add-panel").addEventListener("submit", function(e){
+      e.preventDefault();
+      var code = document.getElementById("add-code").value.trim().toUpperCase().replace(/\s+/g," ");
+      var hrs = parseFloat(document.getElementById("add-hours").value);
+      if(!code || isNaN(hrs)){ showToast("A course code and hours are needed.", true); return; }
+      if(!/\s/.test(code)) code = prettyCode(code);
+      state.courses.push({
+        term: document.getElementById("add-term").value.trim(),
+        code: code,
+        title: document.getElementById("add-title").value.trim(),
+        grade: gradeSel.value,
+        type: typeSel.value,
+        hours: hrs.toFixed(1)
+      });
+      saveState();
+      renderAll();
+      closeAddPanel();
+      showToast("Added " + code + ".");
+    });
+  }
+
+  function fillFromCode(code){
+    var info = CATALOG[code];
+    document.getElementById("add-code").value = code ? prettyCode(code) : "";
+    document.getElementById("add-title").value = info ? info[0] : "";
+    document.getElementById("add-hours").value = info ? info[1].toFixed(1) : "";
+  }
+
+  function openAddPanel(code){
+    var panel = document.getElementById("add-panel");
+    panel.reset();
+    document.getElementById("add-grade").value = "";
+    document.getElementById("add-type").value = "In progress";
+    document.getElementById("add-pick").value = code || "";
+    fillFromCode(code || "");
+    var terms = document.getElementById("term-list");
+    terms.innerHTML = "";
+    var seenT = {};
+    state.courses.forEach(function(c){
+      if(c.term && !seenT[c.term]){ seenT[c.term] = 1; var o = document.createElement("option"); o.value = c.term; terms.appendChild(o); }
+    });
+    panel.hidden = false;
+    panel.scrollIntoView({behavior:"smooth", block:"center"});
+    setTimeout(function(){ document.getElementById(code ? "add-grade" : "add-pick").focus({preventScroll:true}); }, 250);
+  }
+
+  function closeAddPanel(){ document.getElementById("add-panel").hidden = true; }
+
+  /* ================= light / dark toggle ================= */
+  var ICON_MOON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+  var ICON_SUN = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
+
+  function applyTheme(theme){
+    document.documentElement.setAttribute("data-theme", theme);
+    var btn = document.getElementById("theme-toggle");
+    var dark = theme === "dark";
+    btn.innerHTML = (dark ? ICON_SUN : ICON_MOON) + '<span>' + (dark ? "Light" : "Dark") + '</span>';
+    btn.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+  }
+  function initThemeToggle(){
+    var theme = "light";
+    try{ theme = localStorage.getItem("premed-theme") === "dark" ? "dark" : "light"; }catch(e){}
+    applyTheme(theme);
+    document.getElementById("theme-toggle").addEventListener("click", function(){
+      var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      applyTheme(next);
+      try{ localStorage.setItem("premed-theme", next); }catch(e){}
+    });
+  }
+
+  /* ================= wiring ================= */
+  function init(){
+    initThemeToggle();
+    loadState();
+    renderAll();
+
+    var dz = document.getElementById("dropzone");
+    var fileInput = document.getElementById("file-input");
+    dz.addEventListener("click", function(){ fileInput.click(); });
+    dz.addEventListener("keydown", function(e){ if(e.key==="Enter" || e.key===" ") fileInput.click(); });
+    fileInput.addEventListener("change", function(){
+      if(fileInput.files && fileInput.files[0]) handlePdfFile(fileInput.files[0]);
+      fileInput.value = "";
+    });
+    ["dragover","dragenter"].forEach(function(evt){
+      dz.addEventListener(evt, function(e){ e.preventDefault(); dz.classList.add("drag"); });
+    });
+    ["dragleave","drop"].forEach(function(evt){
+      dz.addEventListener(evt, function(e){ e.preventDefault(); dz.classList.remove("drag"); });
+    });
+    dz.addEventListener("drop", function(e){
+      var f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if(f) handlePdfFile(f);
+    });
+
+    document.getElementById("toggle-paste").addEventListener("click", function(){
+      document.getElementById("paste-box").classList.toggle("open");
+    });
+    document.getElementById("parse-paste").addEventListener("click", function(){
+      var txt = document.getElementById("paste-text").value;
+      applyParsed(parseLinesToCourses(txt.split("\n")), "pasted text");
+    });
+    document.getElementById("clear-all").addEventListener("click", function(){
+      if(state.courses.length === 0){ showToast("Nothing to clear."); return; }
+      var backup = state.courses.slice();
+      state.courses = [];
+      saveState();
+      renderAll();
+      document.getElementById("raw-details").hidden = true;
+      showToast("Cleared " + backup.length + " courses.", false, function(){
+        state.courses = backup;
+        saveState();
+        renderAll();
+      });
+    });
+
+    var listToggle = document.getElementById("list-toggle");
+    listToggle.addEventListener("click", function(){
+      var open = listToggle.getAttribute("aria-expanded") !== "true";
+      listToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      document.getElementById("course-list").hidden = !open;
+      document.getElementById("list-toggle-label").textContent = open ? "Hide" : "Show all";
+    });
+
+    initAddPanel();
+    document.getElementById("add-row").addEventListener("click", function(){ openAddPanel(""); });
+    document.getElementById("req-grid").addEventListener("click", function(e){
+      var chip = e.target.closest("[data-add]");
+      if(chip) openAddPanel(chip.getAttribute("data-add"));
+    });
+
+    if(typeof window.pdfjsLib === "undefined"){
+      document.getElementById("pdfjs-status").textContent = "(PDF upload needs a script blocked in this view — pasting text always works.)";
+    }
+  }
+
+  if(document.readyState === "loading"){
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+</script>
+</body>
+</html>
