@@ -5,16 +5,16 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>UT Pre-Med Requirements Check</title>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;600;700;800&display=swap">
 <style>
   /* layout: burnt-orange header -> intake card (upload/paste/table) -> requirement ledger grid -> footnote */
   :root{
     --bg:#FFFFFF;
     --surface:#FFFFFF;
-    --surface-2:#FBF5F0;
-    --ink:#333F48;
-    --ink-soft:#5F6B73;
-    --line:#E8DED6;
+    --surface-2:#F8F1EA;
+    --ink:#1E272D;
+    --ink-soft:#4E5A62;
+    --line:#DCCFC4;
     --accent:#BF5700;
     --accent-ink:#FFFFFF;
     --good:#2E6B45;
@@ -25,9 +25,9 @@
     --bad-bg:#FAE8E4;
     --info:#2F5D8A;
     --info-bg:#E3ECF6;
-    --font-display:'Fraunces', Georgia, serif;
-    --font-body:'IBM Plex Sans', system-ui, -apple-system, sans-serif;
-    --font-mono:'IBM Plex Mono', 'SFMono-Regular', Menlo, monospace;
+    --font-display:'Libre Franklin', 'Helvetica Neue', Arial, sans-serif;
+    --font-body:'Libre Franklin', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono:'JetBrains Mono', 'SFMono-Regular', Menlo, monospace;
     --hero:#BF5700;
     --hero-ink:#FFFFFF;
     color-scheme: light;
@@ -35,7 +35,7 @@
   /* dark mode is opt-in via the header toggle; the burnt-orange banner stays the same in both */
   :root[data-theme="dark"]{
     --bg:#171412; --surface:#211D1A; --surface-2:#2A2521;
-    --ink:#F3ECE6; --ink-soft:#B9AEA5; --line:#3A332D;
+    --ink:#F3ECE6; --ink-soft:#B9AEA5; --line:#4A4038;
     --accent:#F2873A; --accent-ink:#1E1206;
     --good:#7FCF98; --good-bg:#1D3326;
     --warn:#F0BE63; --warn-bg:#3A2C10;
@@ -66,7 +66,7 @@
   .theme-toggle{
     flex:none; display:inline-flex; align-items:center; gap:6px;
     background:rgba(255,255,255,.14); color:var(--hero-ink); border:1px solid rgba(255,255,255,.45);
-    border-radius:99px; padding:6px 12px; font-size:12px; font-weight:600;
+    border-radius:3px; padding:6px 12px; font-size:12px; font-weight:600;
   }
   .theme-toggle:hover{ background:rgba(255,255,255,.24); border-color:var(--hero-ink); }
   .theme-toggle svg{ width:14px; height:14px; }
@@ -79,7 +79,7 @@
 
   /* ---------- card ---------- */
   .card{
-    background:var(--surface); border:1px solid var(--line); border-radius:14px;
+    background:var(--surface); border:1px solid var(--line); border-radius:6px;
     padding:20px; min-width:0;
   }
   .card h2{
@@ -89,7 +89,7 @@
 
   /* ---------- intake ---------- */
   .dropzone{
-    border:1.5px dashed var(--line); border-radius:12px; padding:22px 16px;
+    border:1.5px dashed var(--line); border-radius:6px; padding:22px 16px;
     display:flex; flex-direction:column; align-items:center; gap:6px; text-align:center;
     cursor:pointer; transition:border-color .15s, background .15s; background:var(--surface-2);
   }
@@ -101,7 +101,7 @@
   .intake-row{ display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-top:12px; }
   button{
     font-family:var(--font-body); font-size:13.5px; font-weight:600; cursor:pointer;
-    border-radius:9px; border:1px solid var(--line); background:var(--surface);
+    border-radius:4px; border:1px solid var(--line); background:var(--surface);
     color:var(--ink); padding:9px 14px; transition:background .12s, border-color .12s, transform .05s;
   }
   button:hover{ border-color:var(--accent); }
@@ -109,12 +109,12 @@
   button.primary{ background:var(--accent); color:var(--accent-ink); border-color:var(--accent); }
   button.primary:hover{ filter:brightness(1.05); }
   button.ghost{ background:transparent; }
-  button.small{ padding:5px 10px; font-size:12px; border-radius:7px; }
+  button.small{ padding:5px 10px; font-size:12px; border-radius:4px; }
   button:disabled{ opacity:.45; cursor:not-allowed; }
 
   textarea{
     width:100%; min-height:120px; font-family:var(--font-mono); font-size:12.5px;
-    border:1px solid var(--line); border-radius:10px; padding:12px; background:var(--surface);
+    border:1px solid var(--line); border-radius:5px; padding:12px; background:var(--surface);
     color:var(--ink); resize:vertical;
   }
   .paste-box{ margin-top:12px; display:none; flex-direction:column; gap:8px; }
@@ -129,7 +129,7 @@
 
   /* ---------- add-course panel ---------- */
   .add-panel{
-    margin-top:14px; border:1px solid var(--line); border-radius:12px; padding:16px;
+    margin-top:14px; border:1px solid var(--line); border-radius:6px; padding:16px;
     background:var(--surface-2); display:flex; flex-direction:column; gap:12px;
   }
   .add-panel[hidden]{ display:none; }
@@ -140,7 +140,7 @@
   .add-grid .f-wide{ grid-column:span 2; }
   .add-grid input, .add-grid select{
     font-family:var(--font-body); font-size:13.5px; text-transform:none; letter-spacing:0; color:var(--ink);
-    background:var(--surface); border:1px solid var(--line); border-radius:8px; padding:8px 9px; width:100%; min-width:0;
+    background:var(--surface); border:1px solid var(--line); border-radius:4px; padding:8px 9px; width:100%; min-width:0;
   }
   .add-grid input:focus, .add-grid select:focus{ outline:none; border-color:var(--accent); }
   .add-actions{ display:flex; gap:8px; }
@@ -155,7 +155,7 @@
   .options .opt-path{ font-size:12.5px; line-height:1.45; }
   .opt-chips{ display:flex; flex-wrap:wrap; gap:6px; }
   .opt-chip{
-    font-family:var(--font-body); font-size:12px; font-weight:500; padding:4px 9px; border-radius:99px;
+    font-family:var(--font-body); font-size:12px; font-weight:500; padding:4px 9px; border-radius:3px;
     border:1px solid var(--line); background:var(--surface-2); color:var(--ink); text-align:left;
   }
   .opt-chip b{ font-family:var(--font-mono); font-weight:600; }
@@ -167,14 +167,14 @@
   details.raw .raw-hint{ color:var(--ink-soft); margin:8px 0; line-height:1.5; }
   .raw-lines{
     font-family:var(--font-mono); font-size:11.5px; line-height:1.55; max-height:280px; overflow:auto;
-    border:1px solid var(--line); border-radius:10px; padding:10px 12px; background:var(--surface-2);
+    border:1px solid var(--line); border-radius:5px; padding:10px 12px; background:var(--surface-2);
     white-space:pre-wrap; word-break:break-word;
   }
   .raw-lines .hit{ color:var(--good); }
   .raw-lines .miss{ color:var(--bad); font-weight:600; }
 
   /* ---------- table ---------- */
-  .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:10px; }
+  .table-scroll{ overflow-x:auto; border:1px solid var(--line); border-radius:5px; }
   table{ border-collapse:collapse; width:100%; min-width:640px; font-size:13px; }
   thead th{
     text-align:left; font-family:var(--font-mono); font-size:10.5px; letter-spacing:.07em;
@@ -196,7 +196,7 @@
 
   .list-toggle{
     margin-top:14px; width:100%; display:flex; justify-content:space-between; align-items:center; gap:10px;
-    background:var(--surface-2); border:1px solid var(--line); border-radius:10px; padding:11px 14px;
+    background:var(--surface-2); border:1px solid var(--line); border-radius:5px; padding:11px 14px;
     font-size:13.5px; font-weight:600; color:var(--ink); text-align:left;
   }
   .list-toggle-action{ display:inline-flex; align-items:center; gap:4px; color:var(--accent); font-size:12.5px; white-space:nowrap; }
@@ -208,21 +208,21 @@
   .ledger-head{ display:flex; justify-content:space-between; align-items:baseline; gap:10px; flex-wrap:wrap; }
   .group-grid{ display:grid; grid-template-columns:repeat(auto-fit, minmax(260px,1fr)); gap:14px; }
   .req-card{
-    background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px;
+    background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:16px;
     display:flex; flex-direction:column; gap:10px; min-width:0;
   }
   .req-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:8px; }
   .req-name .group{ font-size:11px; color:var(--ink-soft); font-family:var(--font-mono); letter-spacing:.04em; text-transform:uppercase; }
   .req-name .part{ font-family:var(--font-display); font-size:17px; font-weight:600; }
   .chip{
-    font-size:11px; font-weight:700; letter-spacing:.03em; padding:4px 9px; border-radius:99px;
+    font-size:11px; font-weight:700; letter-spacing:.03em; padding:4px 9px; border-radius:3px;
     white-space:nowrap; font-family:var(--font-mono);
   }
   .chip.met{ color:var(--good); background:var(--good-bg); }
   .chip.partial{ color:var(--warn); background:var(--warn-bg); }
   .chip.missing{ color:var(--bad); background:var(--bad-bg); }
 
-  .track{ height:8px; border-radius:99px; background:var(--surface-2); overflow:hidden; display:flex; }
+  .track{ height:8px; border-radius:3px; background:var(--surface-2); overflow:hidden; display:flex; }
   .fill{ height:100%; background:var(--accent); transition:width .25s; flex:none; }
   .fill.met{ background:var(--good); }
   .fill.planned{ opacity:.5; }
@@ -233,7 +233,7 @@
   .matched-list{ display:flex; flex-direction:column; gap:4px; }
   .matched-item{ display:flex; gap:6px; align-items:baseline; font-size:12.5px; flex-wrap:wrap; }
   .matched-item .mcode{ font-family:var(--font-mono); font-weight:600; }
-  .matched-item .flag{ font-size:10.5px; color:var(--warn); background:var(--warn-bg); padding:1px 6px; border-radius:99px; }
+  .matched-item .flag{ font-size:10.5px; color:var(--warn); background:var(--warn-bg); padding:1px 6px; border-radius:3px; }
   .matched-item .flag.ip{ color:var(--info); background:var(--info-bg); }
   .matched-item.excluded{ color:var(--ink-soft); text-decoration:line-through; }
   .matched-item.excluded .flag{ color:var(--bad); background:var(--bad-bg); }
@@ -252,6 +252,45 @@
     body{ padding-inline:16px; }
     .req-top{ flex-direction:column; }
   }
+
+  /* ---------- bold / crisp pass ---------- */
+  body{ font-size:14px; font-weight:500; -webkit-font-smoothing:auto; }
+  h1{ font-weight:900; letter-spacing:-.02em; }
+  .hero a{ font-weight:600; }
+  .theme-toggle{ font-weight:700; border-width:2px; }
+  .card, .req-card{ border-width:2px; }
+  .card h2, .add-head h3{ font-weight:800; letter-spacing:-.01em; }
+  .card h2{ font-size:21px; }
+  .card .hint{ font-weight:500; font-size:13.5px; }
+  .dropzone{ border-width:2px; }
+  .dropzone .big{ font-weight:700; }
+  button{ font-weight:700; border-width:2px; }
+  button.small{ font-size:12.5px; }
+  .list-toggle{ border-width:2px; font-weight:700; }
+  .list-toggle-action{ font-weight:800; }
+  thead th{ font-weight:700; color:var(--ink); }
+  td.code input{ font-weight:700; }
+  .req-card{ border-top-width:5px; }
+  .req-card.s-met{ border-top-color:var(--good); }
+  .req-card.s-partial, .req-card.s-planned{ border-top-color:var(--accent); }
+  .req-card.s-missing{ border-top-color:var(--bad); }
+  .req-name .group{ font-weight:700; letter-spacing:.06em; }
+  .req-name .part{ font-size:19px; font-weight:800; letter-spacing:-.01em; }
+  .chip{ font-weight:800; text-transform:uppercase; letter-spacing:.05em; font-size:10.5px; padding:4px 8px; }
+  .track{ height:10px; border-radius:2px; }
+  .hrs-line{ font-weight:600; }
+  .hrs-line b{ font-weight:800; }
+  .matched-item{ font-weight:600; }
+  .matched-item .mcode{ font-weight:800; }
+  .matched-item .flag{ font-weight:700; }
+  .options{ border-top-style:solid; border-top-width:2px; }
+  .options .opt-label{ font-weight:800; color:var(--ink); }
+  .options .opt-path{ font-weight:500; }
+  .opt-chip{ font-weight:600; border-width:2px; }
+  .opt-chip b{ font-weight:800; }
+  .add-grid label{ font-weight:700; }
+  .add-grid input, .add-grid select{ border-width:2px; font-weight:500; }
+  footer{ border-top-width:2px; font-weight:500; }
 </style>
 </head>
 <body>
@@ -838,7 +877,7 @@
     results.forEach(function(r){
       var req = r.req;
       var card = document.createElement("div");
-      card.className = "req-card";
+      card.className = "req-card s-" + r.status;
 
       var pct = Math.min(100, (r.sumHours / req.hours) * 100);
       var planPct = r.status === "met" ? 0 : Math.min(100 - pct, (r.plannedHours / req.hours) * 100);
